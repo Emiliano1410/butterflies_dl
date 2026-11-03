@@ -4,14 +4,6 @@ Clasificador de 75 especies de mariposas con TensorFlow/Keras. Se compara una CN
 
 Dataset: [Butterfly Image Classification (Kaggle)](https://www.kaggle.com/datasets/phucthaiv02/butterfly-image-classification): 9,285 imágenes, 75 clases.
 
-## Resultados
-
-| Modelo | Accuracy val | Accuracy test |
-| --- | --- | --- |
-| CNN desde cero (línea base) | 68.72% | 68.00% |
-| CNN desde cero + aumento de datos, dropout y LR adaptativo | 83.18% | 79.69% |
-| **EfficientNetB0 con transfer learning** | **94.05%** | **91.69%** |
-
 ## Estructura
 
 ```
