@@ -1,7 +1,3 @@
-"""Interfaz gráfica de predicción - Butterfly Image Classification (EfficientNetB0).
-
-Uso:  python app.py   -> abrir http://127.0.0.1:7860 en el navegador de Windows
-"""
 import numpy as np
 import pandas as pd
 import gradio as gr
