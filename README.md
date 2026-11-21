@@ -7,6 +7,7 @@ Dataset: [Butterfly Image Classification (Kaggle)](https://www.kaggle.com/datase
 ## Estructura
 
 ```
+DL_Butterflies.pdf     Paper del proyecto
 etl.py                 Verificación de datos, división estratificada 70/15/15 y pipeline tf.data
 train_cnn.py           CNN desde cero (IMPROVED = False: línea base | True: versión mejorada)
 train_tl.py            Transfer learning con EfficientNetB0 (fase congelada + fine-tuning)
