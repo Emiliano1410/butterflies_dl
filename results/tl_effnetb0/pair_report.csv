@@ -1,0 +1,5 @@
+split,clase,imagenes,correctas,confundida_con_par,confundida_con_otra,falsos_positivos
+val,MONARCH,14,13,1,0,0
+val,VICEROY,12,12,0,0,1
+test,MONARCH,13,11,2,0,1
+test,VICEROY,12,11,1,0,2

@@ -1,13 +1,10 @@
-"""Interfaz gráfica de predicción - Butterfly Image Classification (EfficientNetB0).
-
-Uso:  python app.py   -> abrir http://127.0.0.1:7860 en el navegador de Windows
-"""
 import numpy as np
 import pandas as pd
 import gradio as gr
 import tensorflow as tf
 
 from etl import DATA_DIR, IMG_SIZE, load_splits, make_dataset
+from especialista import SPECIALIST_PATH, refinar
 
 MODEL_PATH = "results/tl_effnetb0/best_model.keras"
 TEST_DIR = DATA_DIR / "test"
@@ -17,8 +14,14 @@ for gpu in tf.config.list_physical_devices("GPU"):
     tf.config.experimental.set_memory_growth(gpu, True)
 
 model = tf.keras.models.load_model(MODEL_PATH)
+specialist = tf.keras.models.load_model(SPECIALIST_PATH)   # MONARCH vs VICEROY
 _, _, _, CLASSES = load_splits()
 test_files = pd.read_csv(DATA_DIR / "Testing_set.csv")
+
+
+def predict_probs(x):
+    """Modelo general + especialista (solo interviene si predice MONARCH o VICEROY)."""
+    return refinar(model.predict(x, verbose=0), specialist.predict(x, verbose=0), CLASSES)
 
 
 def preprocess(img):
@@ -30,7 +33,7 @@ def predict_image(img):
     """Imagen subida -> top 5 especies con su probabilidad."""
     if img is None:
         return None
-    probs = model.predict(preprocess(img)[None, ...], verbose=0)[0]
+    probs = predict_probs(preprocess(img)[None, ...])[0]
     top5 = np.argsort(probs)[::-1][:5]
     return {CLASSES[i]: float(probs[i]) for i in top5}
 
@@ -40,14 +43,14 @@ def predict_sample():
     sample = test_files.sample(N_SAMPLE)
     paths = [str(TEST_DIR / f) for f in sample.filename]
     imgs = [preprocess(tf.io.decode_jpeg(tf.io.read_file(p), channels=3)) for p in paths]
-    probs = model.predict(tf.stack(imgs), verbose=0)
+    probs = predict_probs(tf.stack(imgs))
     return [(p, f"{CLASSES[pr.argmax()]} ({pr.max():.0%})") for p, pr in zip(paths, probs)]
 
 
 def predict_test_set():
     """Predice las 2,786 imágenes de test en el orden de Testing_set.csv y guarda un CSV."""
     ds = make_dataset(test_files, img_dir=TEST_DIR, labeled=False)
-    probs = model.predict(ds, verbose=0)
+    probs = predict_probs(ds)
     out = test_files.assign(label=[CLASSES[i] for i in probs.argmax(axis=1)],
                             confidence=probs.max(axis=1).round(4))
     out.to_csv("predicciones_test.csv", index=False)
@@ -56,7 +59,8 @@ def predict_test_set():
 
 with gr.Blocks(title="Clasificador de mariposas") as demo:
     gr.Markdown("# Clasificador de especies de mariposas\n"
-                "EfficientNetB0 con transfer learning · 75 especies · 91.7% de accuracy en test")
+                "EfficientNetB0 con transfer learning + especialista monarca/virrey · "
+                "75 especies · 91.9% de accuracy en test")
 
     with gr.Tab("Subir imagen"):
         with gr.Row():
